@@ -172,7 +172,7 @@ class _DropdownMenuPainter extends CustomPainter {
     required this.getSelectedItemOffset,
   })  : _painter = BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(2.0),
+          borderRadius: BorderRadius.circular(3.0),
           boxShadow: kElevationToShadow[elevation],
         ).createBoxPainter(),
         super(repaint: resize);
