@@ -400,6 +400,7 @@ class _DropdownMenuState<T> extends State<_DropdownMenu<T>> {
                 child: Scrollbar(
                   thumbVisibility: true,
                   child: ListView(
+                    controller: route.scrollController,
                     padding: kMaterialListPadding,
                     shrinkWrap: true,
                     children: children,
@@ -849,6 +850,7 @@ class _DropdownButtonState<T> extends State<CustomDropdownButton<T>>
   bool _hasPrimaryFocus = false;
   late Map<Type, Action<Intent>> _actionMap;
   late FocusHighlightMode _focusHighlightMode;
+  final dropdownState = DropdownState();
 
   FocusNode _createFocusNode() {
     return FocusNode(debugLabel: '${widget.runtimeType}');
@@ -1002,9 +1004,15 @@ class _DropdownButtonState<T> extends State<CustomDropdownButton<T>>
         return;
       }
       widget.onChanged?.call(newValue.result);
+      setState(mounted, this.setState, () {
+        dropdownState.setDropdownFocus(false);
+      });
     });
 
     widget.onTap?.call();
+    setState(mounted, this.setState, () {
+      dropdownState.setDropdownFocus(true);
+    });
   }
 
   double get _denseButtonHeight {
@@ -1188,13 +1196,35 @@ class _DropdownButtonState<T> extends State<CustomDropdownButton<T>>
           canRequestFocus: _enabled,
           focusNode: focusNode,
           autofocus: widget.autofocus,
-          child: GestureDetector(
-            onTap: _enabled ? _handleTap : null,
-            behavior: HitTestBehavior.opaque,
-            child: result,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: _enabled ? _handleTap : null,
+              behavior: HitTestBehavior.opaque,
+              child: result,
+            ),
           ),
         ),
       ),
     );
+  }
+}
+
+class DropdownState extends ChangeNotifier {
+  static final DropdownState _instance = DropdownState._internal();
+
+  factory DropdownState() {
+    return _instance;
+  }
+
+  DropdownState._internal(); // Private constructor
+
+  bool _isDropdownFocus = false;
+
+  bool get isDropdownFocus => _isDropdownFocus;
+
+  void setDropdownFocus(bool value) {
+    _isDropdownFocus = value;
+    notifyListeners();
   }
 }

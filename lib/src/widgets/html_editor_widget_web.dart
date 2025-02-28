@@ -59,13 +59,27 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
   /// Tracks whether the editor was disabled onInit (to avoid re-disabling on reload)
   bool alreadyDisabled = false;
 
+  late final html.IFrameElement iframe;
+  final dropdownState = DropdownState();
+
   @override
   void initState() {
     actualHeight = widget.otherOptions.height;
     createdViewId = getRandString(10);
     widget.controller.viewId = createdViewId;
+    dropdownState.addListener(
+      () {
+        _updateIframePointerEvents();
+      },
+    );
     initSummernote();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    dropdownState.removeListener(_updateIframePointerEvents);
+    super.dispose();
   }
 
   void initSummernote() async {
@@ -463,7 +477,7 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
         .replaceFirst('"summernote-lite.min.js"',
             '"assets/packages/html_editor_enhanced/assets/summernote-lite.min.js"');
     if (widget.callbacks != null) addJSListener(widget.callbacks!);
-    final iframe = html.IFrameElement()
+    iframe = html.IFrameElement()
       ..width = MediaQuery.of(widget.initBC).size.width.toString() //'800'
       ..height = widget.htmlEditorOptions.autoAdjustHeight
           ? actualHeight.toString()
@@ -472,6 +486,7 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
       ..srcdoc = htmlString
       ..style.border = 'none'
       ..style.overflow = 'hidden'
+      ..style.pointerEvents = 'auto'
       ..onLoad.listen((event) async {
         if (widget.htmlEditorOptions.disabled && !alreadyDisabled) {
           widget.controller.disable();
@@ -538,6 +553,14 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
     });
   }
 
+  void _updateIframePointerEvents() {
+    if (dropdownState.isDropdownFocus) {
+      iframe.style.pointerEvents = 'none';
+    } else {
+      iframe.style.pointerEvents = 'auto';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -561,8 +584,15 @@ class _HtmlEditorWidgetWebState extends State<HtmlEditorWidget> {
                       future: summernoteInit,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          return HtmlElementView(
-                            viewType: createdViewId,
+                          return TapRegion(
+                            onTapInside: (event) {
+                              setState(mounted, this.setState, () {
+                                iframe.style.pointerEvents = 'auto';
+                              });
+                            },
+                            child: HtmlElementView(
+                              viewType: createdViewId,
+                            ),
                           );
                         } else {
                           return Container(
