@@ -1129,6 +1129,7 @@ class ToolbarWidgetState extends State<ToolbarWidget> {
                             borderRadius: 0,
                             wheelDiameter: 165,
                             enableOpacity: false,
+                            showColorCode: true,
                             colorCodeHasColor: true,
                             pickersEnabled: <ColorPickerType, bool>{
                               ColorPickerType.wheel: true,
