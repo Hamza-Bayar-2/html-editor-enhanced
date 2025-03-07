@@ -1003,16 +1003,16 @@ class _DropdownButtonState<T> extends State<CustomDropdownButton<T>>
       if (!mounted || newValue == null) {
         return;
       }
-      widget.onChanged?.call(newValue.result);
       setState(mounted, this.setState, () {
-        dropdownState.setDropdownFocus(false);
+        dropdownState.setDropdownUnfocused();
       });
+      widget.onChanged?.call(newValue.result);
     });
 
-    widget.onTap?.call();
     setState(mounted, this.setState, () {
-      dropdownState.setDropdownFocus(true);
+      dropdownState.setDropdownFocused();
     });
+    widget.onTap?.call();
   }
 
   double get _denseButtonHeight {
@@ -1223,8 +1223,13 @@ class DropdownState extends ChangeNotifier {
 
   bool get isDropdownFocus => _isDropdownFocus;
 
-  void setDropdownFocus(bool value) {
-    _isDropdownFocus = value;
+  void setDropdownFocused() {
+    _isDropdownFocus = true;
+    notifyListeners();
+  }
+
+  void setDropdownUnfocused() {
+    _isDropdownFocus = false;
     notifyListeners();
   }
 }
